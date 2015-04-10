@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link type="text/css" rel="stylesheet" href="style.css"/>
     <script src="jquery.js"></script>
     <script src="data_generator.js"></script>
+  <head>
+    <title>Twittler</title>
   </head>
   <body>
     <script>
@@ -11,17 +14,124 @@
         var $body = $('body');
         $body.html('');
 
-        var index = streams.home.length - 1;
-        while(index >= 0){
-          var tweet = streams.home[index];
-          var $tweet = $('<div></div>');
-          $tweet.text('@' + tweet.user + ': ' + tweet.message);
-          $tweet.appendTo($body);
-          index -= 1;
+        var visitor = "me"; //new user to add to streams
+
+        //helper function that creates the html of the webpage
+        var createInitialDivBoxes = function() {
+
+          //create a div in the body that contains the contents of the webpage
+          var $outline = $('<div id="outline"></div>');
+          $outline.appendTo($body);
+
+          //create the title bar
+          var $box = $('<div id="pageTitleBar"></div>');
+          $box.appendTo($outline); 
+          $('#pageTitleBar').append('<span id="pageTitleBarTitle">Twittler</span>' + '<br>');
+
+          //add tweet array for visitor
+          streams.users[visitor] = [];
+
+          //create the tweet divs for each user
+          for(var user in streams.users)
+          {
+            $box = $('<div class="tweetBox" onclick="location.href=\'#\';" style="cursor: pointer;"></div>'); 
+            $box.appendTo($outline);
+
+            $box.append('<span class="tweetBoxTitle">' + user + '</span>' + '<br>');
+            $box.append('<div id="' + user + '" class="tweetBoxContents"></div>');
+          }       
+
+          //create the div and textarea for the visitor to create a new tweet
+          $outline.append('<div id="writeTweet"></div>');
+          $('#writeTweet').append('New Tweet:<br><textarea id="writeTweetBox" name="writeTweetBox" rows="4" cols="80"></textarea><br>' 
+            + '<button id="submitTweet" type="button">Submit</button>');
+        };
+
+        //helper function that displays the last n tweets for a user
+        var displayNlastestTweetsOfUser = function(n, user) {
+          var tweetArray = streams.users[user];
+
+          //prevent array-out-of-bounds from occuring
+          if(n >= tweetArray.length)
+            n = 0;
+          else
+            n = tweetArray.length - n;
+
+          //display the tweets for the user in the correct box
+          for(var i = streams.users[user].length - 1; i >= n; --i)
+          {       
+            var tweet = streams.users[user][i];
+            $('#' + user).append('@' + tweet.user + ': ' + tweet.message + ' <span class="tweetDate"> - on ' + tweet.created_at.toString().toLocaleString() + '</span> <br>');
+          }
+        };
+
+        //helper function that displays all latest tweets of every user
+        var displayAllLatestTweets = function() {
+          for(var user in streams.users)
+          {
+            displayNlastestTweetsOfUser(1, user);
+          }  
+        };
+
+        //helper function that clears tweets for a user
+        var clearTweetsOfUser = function(user) {
+          $('#' + user).empty();
+        };
+
+        //helper function that clears all tweets
+        var clearAllTweets = function() {
+          $('.tweetBoxContents').empty();
+        };
+
+        //helper function that shows the last 15 tweets for the inputted user and the last 1 tweet for every other user
+        var showTweetBoxContents = function(currentUser) {
+          clearAllTweets(); //clear all tweets before showing new tweets so that only the latest tweets will show
+
+          for(var user in streams.users)
+          {
+            if(user === currentUser)
+              displayNlastestTweetsOfUser(15, user);
+            else
+              displayNlastestTweetsOfUser(1, user);
+          }   
         }
+
+        //helper function that adds a new tweet for the inputted user
+        //then it calls showTweetBoxContents function to refresh the page of tweets
+        var submitNewTweet = function(message, user, currentUser) {
+          writeTweet(user, message);
+          showTweetBoxContents(currentUser);
+        };
+
+
+        //call createInitialDivBoxes function to create the html layout
+        createInitialDivBoxes();
+
+        //call displayAllLatestTweets to initialize the page with the latest tweets of every user
+        displayAllLatestTweets();
+
+        var clickedUser; //the currently clicked on user; 15 of the latest tweets will be displayed for this user only
+
+        //when a tweet box is clicked, call showTweetBoxContents function to show 15 tweets for the corresponding user
+        $('.tweetBox').click(function() {
+          clickedUser = $(this).children('.tweetBoxContents').attr('id'); //set the clicked user to the user of the clicked on box
+          showTweetBoxContents(clickedUser);
+        });
+
+        //call submitNewTweet to add new tweet for the visitor; the tweet message will be the text in the writeTweetBox textarea box
+        $('#submitTweet').click(function() {
+          submitNewTweet($('#writeTweetBox').val(), visitor, clickedUser);
+          $('#writeTweetBox').val(''); //clear the textarea form
+        });
+
+        //refresh the page with new tweets every 10 seconds; make sure that 15 tweets still show up for the clicked on user
+        setInterval(function() {
+          showTweetBoxContents(clickedUser);
+        }, 10000);  
 
       });
 
     </script>
   </body>
 </html>
+

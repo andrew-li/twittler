@@ -1,0 +1,32 @@
+  #pageTitleBar {
+    height: 60px;
+    background: lightblue;
+  } 
+
+  #pageTitleBarTitle {
+    font-size: xx-large;
+    font-weight: bold;
+    color: white;
+  }
+
+  .tweetBox {
+    border-color: lightgray;
+    border-style: solid;
+    border-width: thin;
+  }
+
+  .tweetBoxTitle {
+    font-weight: bold;
+  }
+
+  .tweetDate {
+    font-style: italic;
+  }
+
+  #writeTweet {
+    margin-top: 50px;
+  }
+
+  #writeTweetBox {
+    margin-bottom: 10px;
+  }
